@@ -1,0 +1,8 @@
+# is the root configuration file for the service.
+datamodel: datamodel.graphql
+secret: mysecret123
+hooks:
+  post-deploy:
+    - yarn graphql get-schema --project database
+
+endpoint: https://us1.prisma.sh/hitunes-b60d5a/database/dev
