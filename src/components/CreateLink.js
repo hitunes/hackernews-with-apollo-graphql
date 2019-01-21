@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import gql from "graphql-tag";
+import { LINKS_PER_PAGE } from "./constants";
+import { setContext } from "apollo-link-context";
 import { FEED_QUERY } from "./LinkList";
 import { Mutation } from "react-apollo";
-
 const POST_MUTATION = gql`
   mutation PostMutation($description: String!, $url: String!) {
     post(description: $description, url: $url) {
@@ -13,6 +14,7 @@ const POST_MUTATION = gql`
     }
   }
 `;
+
 class CreateLink extends Component {
   state = {
     description: "",
@@ -34,11 +36,7 @@ class CreateLink extends Component {
           <input
             className="mb2"
             value={url}
-            onChange={e =>
-              this.setState({
-                url: e.target.value
-              })
-            }
+            onChange={e => this.setState({ url: e.target.value })}
             type="text"
             placeholder="The URL for the link"
           />
@@ -46,13 +44,20 @@ class CreateLink extends Component {
         <Mutation
           mutation={POST_MUTATION}
           variables={{ description, url }}
-          onCompleted={() => this.props.history.push("/")}
+          onCompleted={() => this.props.history.push("/new/1")}
           update={(store, { data: { post } }) => {
-            const data = store.readQuery({ query: FEED_QUERY });
+            const first = LINKS_PER_PAGE;
+            const skip = 0;
+            const orderBy = "createdAt_DESC";
+            const data = store.readQuery({
+              query: FEED_QUERY,
+              variables: { first, skip, orderBy }
+            });
             data.feed.links.unshift(post);
             store.writeQuery({
               query: FEED_QUERY,
-              data
+              data,
+              variables: { first, skip, orderBy }
             });
           }}
         >
